@@ -38,7 +38,7 @@ db.once('open', () => {
             required: true,
             trim: true
         },
-        
+        // store token for accessing user based on token
         curr_token: {
             type: String,
             unique: true,
@@ -136,6 +136,23 @@ module.exports = {
                     } else {
                         // user does not exist
                         resolve(false)
+                    }
+                }
+            });
+        });
+    },
+    update_student: (token, data) => {
+        return new Promise((resolve, reject) => {
+            User.where({ curr_token: token}).findOne((err, user) => {
+                if (err) reject(err);
+                else {
+                    if (user == null) {
+                        // no user with current token (suggest relog)
+                        reject(false);
+                    } else {
+                        console.log(user);
+                        console.log(data);
+                        resolve(true);
                     }
                 }
             });
