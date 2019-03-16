@@ -59,6 +59,15 @@ app.get('/get_user', (req, res) => {
         });
 });
 
+app.get('/get_courses', (req, res) => {
+    DB.get_courses()
+        .then(data => res.json(data))
+        .catch(err => {
+            console.error(err);
+            res.send(false);
+        });
+});
+
 app.post('/update_student', (req, res) => {
     // authorization = ['Bearer', 'token']
     var token = req.headers.authorization.split(" ")[1];

@@ -9,6 +9,7 @@ const db = mongoose.connection;
 
 /* models */
 var User;
+var Course;
 
 db.on('error', console.error.bind(console, "connection error: "));
 db.once('open', () => {
@@ -63,6 +64,29 @@ db.once('open', () => {
 
     User = mongoose.model('User', userSchema);
 
+    var courseSchema = new mongoose.Schema({
+        title: {
+            type: String,
+            unique: true,
+            required: true,
+            trim: true
+        }
+    });
+    
+    Course = mongoose.model('Course', courseSchema);
+    
+    // store courses into the database
+    const courses = require('../../python/out.json')['courses'];
+    for (let i = 0; i < courses.length; i++) {
+        var course_title = courses[i];
+        var course = new Course({
+            title: course_title
+        });
+        course.save((err, course) => {
+            // if err,course already exists
+            //if (err) console.error(err);
+        });
+    }
 });
 
 /* exports */
@@ -160,6 +184,14 @@ module.exports = {
                     }
                 }
             });
+        });
+    },
+    get_courses: () => {
+        return new Promise((resolve, reject) => {
+            Course.find({}, (err, docs) => {
+                if (err) reject(err);
+                resolve(docs);
+            }).exec();  // unknown necessary exec()? server freezes without
         });
     },
     // updates user information with given token to have data
