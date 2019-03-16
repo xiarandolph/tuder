@@ -1,3 +1,3 @@
 # tuder
 
-HackRPI 2019 Proejct
+HackRPI 2019 Project
