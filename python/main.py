@@ -16,7 +16,7 @@ for item in a:
 	b = item.find_all('td')
 
 	if len(b) > 1:
-		txt = b[0].text[7:16] + " " + b[1].text
+		txt = b[0].text[7:16].strip() + " " + b[1].text.strip()
 		txt = txt.lower()
 		courses.add(txt)
 
