@@ -32,6 +32,7 @@
                                     <v-text-field id="first" name="first" label="First Name" v-model="first_name" required></v-text-field>
 
                                     <v-text-field id="last" name="last" label="Last Name" v-model="last_name" required></v-text-field>
+                                </v-form>
                                 <v-form>
                                     <v-text-field prepend-icon="person" name="email" label="Email" type="text" placeholder="student@rpi.edu"></v-text-field>
 
@@ -53,52 +54,45 @@
 </template>
 
 <script>
-	import router from '@/router';
-	import $ from "jquery";
-	window.jQuery = $;
-	import store from '@/store';
+import router from '@/router';
+import $ from "jquery";
+window.jQuery = $;
+import store from '@/store';
 
-    export default {
-		data: () => ({
-			drawer: null,
-			current_tab: null,
-			password: "",
-			email: "",
-		}),
+export default {
+	data: () => ({
+		drawer: null,
+		current_tab: null,
+		password: "",
+		email: "",
+	}),
 
-		props: {
-			source: String
+	props: {
+		source: String
+	},
+
+	methods: {
+		login: function(email, password) {
+			$.ajax({
+				type: "POST",
+				url: store.state.url + "/login",
+				data: {"email": email, "pass": password},
+				success: (data) => {
+					console.log(data);
+				}
+			});
 		},
 
-		methods: {
-			login: function(email, password) {
-				$.ajax({
-					type: "POST",
-					url: store.state.url + "/login",
-					data: {"email": email, "pass": password},
-					success: (data) => {
-						console.log(data);
-					}
-				});
-			},
-
-			register: function(email, password, last_name, first_name) {
-				$.ajax({
-					type: "POST",
-					url: store.state.url + "/register",
-					data: {"email": email, "pass": password, "first": first_name, "last": last_name},
-					success: (data) => {
-						console.log(data);
-					}
-				});
-			}
+		register: function(email, password, last_name, first_name) {
+			$.ajax({
+				type: "POST",
+				url: store.state.url + "/register",
+				data: {"email": email, "pass": password, "first": first_name, "last": last_name},
+				success: (data) => {
+					console.log(data);
+				}
+			});
 		}
-      data: () => ({
-        drawer: null
-      }),
-
-      props: {
-        source: String
-      }
-    }
+	},
+}
 </script>
