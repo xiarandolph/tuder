@@ -67,6 +67,7 @@ db.once('open', () => {
 
 /* exports */
 module.exports = {
+    // creates user if not already existing
     register_user: (new_email, new_first, new_last, new_pass) => {
         return new Promise((resolve, reject) => {
             User.where({ email: new_email }).findOne((err, user) => {
@@ -104,6 +105,30 @@ module.exports = {
             });
         })
     },
+    // returns user information from a token
+    get_user: (token) => {
+        return new Promise((resolve, reject) => {
+            User.where({ curr_token: token}).findOne((err, user) => {
+                if (err) reject(err);
+                else {
+                    if (user == null) {
+                        // no user with current token (suggest relog)
+                        resolve(false);
+                    } else {
+                        data = {
+                            name: user.name,
+                            email: user.email,
+                            token: user.curr_token,
+                            learn_courses: user.learn_courses,
+                            teach_courses: user.teach_courses
+                        }
+                        resolve(data);
+                    }
+                }
+            });
+        });
+    },
+    // logins in given a email and password, returns token
     login_user: (user_email, user_password) => {
         return new Promise((resolve, reject) => {
             User.where({ email: user_email }).findOne((err, user) => {
@@ -114,20 +139,16 @@ module.exports = {
                         bcrypt.compare(user_password, user.password).then((result) => {
                             if (result) {
                                 const date = (new Date()).getDate()
-                                data = {
-                                    name: user.name,
-                                    email: user.email,
-                                    token: jwt.sign({ sub: (user._id + date + Math.random().toString())}, config.secret),
-                                    id: user._id
-                                }
-                                user.curr_token = data.token;
+                                const token = jwt.sign({ sub: (user._id + date + Math.random().toString())}, config.secret)
+                                user.curr_token = token;
                                 // update the current token
                                 user.save((err, user) => {
                                     if (err) {
                                         reject(err);
                                     }
                                 });
-                                resolve(data);
+                                
+                                resolve(token);
                             }
                             else {
                                 resolve(false);
@@ -141,6 +162,7 @@ module.exports = {
             });
         });
     },
+    // updates user information with given token to have data
     update_student: (token, data) => {
         return new Promise((resolve, reject) => {
             User.where({ curr_token: token}).findOne((err, user) => {
@@ -148,7 +170,7 @@ module.exports = {
                 else {
                     if (user == null) {
                         // no user with current token (suggest relog)
-                        reject(false);
+                        resolve(false);
                     } else {
                         console.log(user);
                         console.log(data);
@@ -158,6 +180,8 @@ module.exports = {
             });
         });
     },
+    // returns all registered users
+    // TODO: accept params to filter
     get_students: () => {
         return new Promise((resolve, reject) => {
             User.find({}, (err, docs) => {

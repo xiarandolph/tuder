@@ -48,6 +48,17 @@ app.post('/login', (req, res) => {
         });
 });
 
+app.get('/get_user', (req, res) => {
+    // authorization = ['Bearer', 'token']
+    var token = req.headers.authorization.split(" ")[1];
+    DB.get_user(token)
+        .then(data => res.json(data))
+        .catch(err => {
+            console.error(err);
+            res.send(false);
+        });
+});
+
 app.post('/update_student', (req, res) => {
     // authorization = ['Bearer', 'token']
     var token = req.headers.authorization.split(" ")[1];
