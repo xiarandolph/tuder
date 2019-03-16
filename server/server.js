@@ -48,6 +48,15 @@ app.post('/login', (req, res) => {
         });
 });
 
+app.get('/get_students', (req, res) => {
+    DB.get_students()
+        .then(data => res.json(data))
+        .catch(err => {
+            console.error(err)
+            res.send(false);
+        });
+});
+
 const server = app.listen(8081, () => {
     const host = server.address().address;
     const port = server.address().port;
