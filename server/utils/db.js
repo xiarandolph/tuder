@@ -38,12 +38,12 @@ db.once('open', () => {
             required: true,
             trim: true
         },
-
+/*
         school: {
             type: String,
-            required: true,
+            required: false
         },
-
+*/
         learn_courses: {
             type: Array,
             required: false
@@ -129,7 +129,7 @@ module.exports = {
     },
     get_students: () => {
         return new Promise((resolve, reject) => {
-            User.find({first: 'derp'}, (err, docs) => {
+            User.find({}, (err, docs) => {
                 if (err) reject(err);
                 resolve(docs);
             }).exec();  // unknown necessary exec()? server freezes without
