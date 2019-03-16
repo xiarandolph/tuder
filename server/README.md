@@ -4,4 +4,4 @@
 npm install --save
 
 ## run server
-nodemon serve
+nodemon server.js
