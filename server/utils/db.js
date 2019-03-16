@@ -37,13 +37,29 @@ db.once('open', () => {
             unique: true,
             required: true,
             trim: true
+        },
+
+        school: {
+            type: String,
+            required: true,
+        },
+
+        learn_courses: {
+            type: Array,
+            required: false
+        },
+
+        teach_courses: {
+            type: Array,
+            required: false
         }
     });
 
     User = mongoose.model('User', userSchema);
-    
-})
 
+});
+
+/* exports */
 module.exports = {
     register_user: (new_email, new_first, new_last, new_pass) => {
         return new Promise((resolve, reject) => {
@@ -61,7 +77,7 @@ module.exports = {
                                 password: hash,
                                 email: new_email
                             });
-                            
+
                             user.save((err, user) => {
                                 if (err) {
                                     //console.error(err);
@@ -69,7 +85,7 @@ module.exports = {
                                 }
                             });
                         });
-                        
+
                         resolve(true);
                     }
                     else {
