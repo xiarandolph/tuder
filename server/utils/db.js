@@ -38,6 +38,12 @@ db.once('open', () => {
             required: true,
             trim: true
         },
+        
+        curr_token: {
+            type: String,
+            unique: true,
+            required: false
+        },
 /*
         school: {
             type: String,
@@ -75,7 +81,8 @@ module.exports = {
                                 first: new_first,
                                 last: new_last,
                                 password: hash,
-                                email: new_email
+                                email: new_email,
+                                curr_token: ""
                             });
 
                             user.save((err, user) => {
@@ -113,6 +120,13 @@ module.exports = {
                                     token: jwt.sign({ sub: (user._id + date + Math.random().toString())}, config.secret),
                                     id: user._id
                                 }
+                                user.curr_token = data.token;
+                                // update the current token
+                                user.save((err, user) => {
+                                    if (err) {
+                                        reject(err);
+                                    }
+                                });
                                 resolve(data);
                             }
                             else {
