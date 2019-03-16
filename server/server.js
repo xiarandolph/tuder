@@ -20,18 +20,19 @@ app.use(error_handler);
 /*
 // Add headers
 app.use((req, res, next) => {
-    //res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8080');
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8080');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
-    //res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
-    //res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+    res.setHeader('Access-Control-Allow-Credentials', true);
     next();
 });*/
 
 // This responds a POST request for the homepage
 app.post('/register', (req, res) => {
-     DB.register_user(req.body['email'], req.body['user'], req.body['pass'])
+     DB.register_user(req.body['email'], req.body['first'], req.body['last'], req.body['pass'])
         .then(data => res.send(data))
         .catch(err => {
+            // email already exists
             console.error(err);
             res.send(false);
         });
@@ -41,6 +42,7 @@ app.post('/login', (req, res) => {
     DB.login_user(req.body['email'], req.body['pass'])
         .then(data => res.json(data))
         .catch(err => {
+            // invalid email or password
             console.error(err);
             res.send(false);
         });

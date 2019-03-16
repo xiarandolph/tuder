@@ -15,9 +15,14 @@ db.once('open', () => {
     console.log("Connected to DB!");
 
     var userSchema = new mongoose.Schema({
-        name: {
+        first: {
             type: String,
-            unique: true,
+            required: true,
+            trim: true
+        },
+
+        last: {
+            type: String,
             required: true,
             trim: true
         },
@@ -36,15 +41,12 @@ db.once('open', () => {
     });
 
     User = mongoose.model('User', userSchema);
-
+    
 })
 
 module.exports = {
-    register_user: (new_email, new_user, new_pass) => {
-      console.log(new_email);
-      console.log(new_pass);
+    register_user: (new_email, new_first, new_last, new_pass) => {
         return new Promise((resolve, reject) => {
-            //console.log(`Email: ${new_email}, User: ${new_user}, Pass: ${new_pass}`)
             User.where({ email: new_email }).findOne((err, user) => {
                 if (err) {
                     //console.error(err);
@@ -54,11 +56,12 @@ module.exports = {
                     if (user == null) {
                         bcrypt.hash(new_pass, 10).then((hash) => {
                             var user = new User({
-                                name: new_user,
+                                first: new_first,
+                                last: new_last,
                                 password: hash,
                                 email: new_email
                             });
-
+                            
                             user.save((err, user) => {
                                 if (err) {
                                     //console.error(err);
@@ -66,7 +69,7 @@ module.exports = {
                                 }
                             });
                         });
-
+                        
                         resolve(true);
                     }
                     else {
@@ -83,8 +86,7 @@ module.exports = {
                 if (err) reject(err);
                 else {
                     if (user != null) {
-                        console.log(user_password);
-                        console.log(user.password);
+                        // user exists, compare passwords
                         bcrypt.compare(user_password, user.password).then((result) => {
                             if (result) {
                                 const date = (new Date()).getDate()
@@ -94,16 +96,14 @@ module.exports = {
                                     token: jwt.sign({ sub: (user._id + date + Math.random().toString())}, config.secret),
                                     id: user._id
                                 }
-                                console.log("worked")
                                 resolve(data);
                             }
                             else {
-                                console.log("fuicked")
                                 resolve(false);
                             }
                         });
                     } else {
-                      console.log("super fucked")
+                        // user does not exist
                         resolve(false)
                     }
                 }
