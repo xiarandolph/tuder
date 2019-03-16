@@ -83,6 +83,7 @@ module.exports = {
                                     //console.error(err);
                                     resolve(false);
                                 }
+                                console.log(`${new_email} registered!`);
                             });
                         });
 
@@ -124,6 +125,14 @@ module.exports = {
                     }
                 }
             });
+        });
+    },
+    get_students: () => {
+        return new Promise((resolve, reject) => {
+            User.find({first: 'derp'}, (err, docs) => {
+                if (err) reject(err);
+                resolve(docs);
+            }).exec();  // unknown necessary exec()? server freezes without
         });
     }
 }
