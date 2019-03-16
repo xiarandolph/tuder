@@ -1,13 +1,18 @@
 import Vue from 'vue'
 import './plugins/vuetify'
+import VeeValidate from 'vee-validate';
 import App from './App.vue'
 import router from './router'
 import store from './store'
+
+import Vuex from 'vuex'
+Vue.use(Vuex)
 
 import $ from "jquery"
 window.jQuery = $
 
 Vue.config.productionTip = false
+Vue.use(VeeValidate);
 
 //handle local authentication of routes
 router.beforeEach((to, from, next) => {
