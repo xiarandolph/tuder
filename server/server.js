@@ -27,7 +27,7 @@ app.use((req, res, next) => {
     next();
 });*/
 
-// This responds a POST request for the homepage
+// POST request to register a new user
 app.post('/register', (req, res) => {
      DB.register_user(req.body['email'], req.body['first'], req.body['last'], req.body['pass'])
         .then(data => res.send(data))
@@ -44,6 +44,28 @@ app.post('/login', (req, res) => {
         .catch(err => {
             // invalid email or password
             console.error(err);
+            res.send(false);
+        });
+});
+
+app.get('/get_user', (req, res) => {
+    // authorization = ['Bearer', 'token']
+    var token = req.headers.authorization.split(" ")[1];
+    DB.get_user(token)
+        .then(data => res.json(data))
+        .catch(err => {
+            console.error(err);
+            res.send(false);
+        });
+});
+
+app.post('/update_student', (req, res) => {
+    // authorization = ['Bearer', 'token']
+    var token = req.headers.authorization.split(" ")[1];
+    DB.update_student(token, req.body)
+        .then(data => res.json(data))
+        .catch(err => {
+            console.error(err)
             res.send(false);
         });
 });
