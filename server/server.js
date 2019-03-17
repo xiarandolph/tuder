@@ -47,10 +47,10 @@ app.post('/login', (req, res) => {
         });
 });
 
-app.get('/get_user', (req, res) => {
+app.get('/get_user_info', (req, res) => {
     // authorization = ['Bearer', 'token']
     var token = req.headers.authorization.split(" ")[1];
-    DB.get_user(token)
+    DB.get_user_info(token)
         .then(data => res.json(data))
         .catch(err => {
             console.error(err);
@@ -58,8 +58,8 @@ app.get('/get_user', (req, res) => {
         });
 });
 
-app.get('/get_courses', (req, res) => {
-    DB.get_courses()
+app.get('/get_all_courses', (req, res) => {
+    DB.get_all_courses()
         .then(data => res.json(data))
         .catch(err => {
             console.error(err);
@@ -67,10 +67,10 @@ app.get('/get_courses', (req, res) => {
         });
 });
 
-app.post('/update_student', (req, res) => {
+app.post('/update_student_info', (req, res) => {
     // authorization = ['Bearer', 'token']
     var token = req.headers.authorization.split(" ")[1];
-    DB.update_student(token, req.body)
+    DB.update_student_info(token, req.body)
         .then(data => res.json(data))
         .catch(err => {
             console.error(err)
@@ -78,8 +78,8 @@ app.post('/update_student', (req, res) => {
         });
 });
 
-app.get('/get_students', (req, res) => {
-    DB.get_students()
+app.get('/get_all_users', (req, res) => {
+    DB.get_all_users()
         .then(data => res.json(data))
         .catch(err => {
             console.error(err)
