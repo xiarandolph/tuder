@@ -17,7 +17,6 @@ app.use(bodyParser.json());
 app.use(jwt());
 app.use(error_handler);
 
-/*
 // Add headers
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8080');
@@ -25,7 +24,7 @@ app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
     res.setHeader('Access-Control-Allow-Credentials', true);
     next();
-});*/
+});
 
 // POST request to register a new user
 app.post('/register', (req, res) => {
