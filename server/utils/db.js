@@ -17,10 +17,11 @@ db.once('open', () => {
     console.log("Connected to DB!");
 
     const studentSchema = new mongoose.Schema({
-        test: {
-            type: String,
-            required: false
-        }
+        courses: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Course",
+            required: true
+        }]
     });
 
     const userSchema = new mongoose.Schema({
@@ -165,12 +166,13 @@ module.exports = {
     get_user_info: (token) => {
         return new Promise((resolve, reject) => {
             User.findOne({ curr_token: token})
-                .populate('student_info').exec((err, user) => {
+                .populate({path: 'student_info', populate: { path: 'courses'} })
+                .exec((err, user) => {
                     if (err) reject(err);
                     else {
                         if (user == null) {
                             // no user with current token (suggest relog)
-                            resolve(false);
+                            reject("Invalid token");
                         } else {
                             data = {
                                 first: user.first,
@@ -195,7 +197,7 @@ module.exports = {
     // updates user information with given token to have data
     update_student_info: (token, data) => {
         return new Promise((resolve, reject) => {
-            User.findOne({ curr_token: token}, (err, user) => {
+            User.findOne({ curr_token: token}).populate('student_info').exec((err, user) => {
                 if (err) reject(err);
                 else {
                     if (user == null) {
@@ -203,33 +205,87 @@ module.exports = {
                         reject("Invalid token");
                     } else {
                         // create student_info model
-                        if (!user.student_info) {
-                            const student = new Student({
-                                test: "random string"
-                            });
-                            student.save((err, student) => {
-                                if (err) console.log(err);
-                            });
-                            // save ref to the student
-                            user.student_info = student._id;
-                        }
-                        
-                        // get the user again (NECESSARY!! can't use user)
-                        User.findOne({ curr_token: token}).populate('student_info')
-                            .exec((err, user) => {
-                                console.log(user);
-                                // update and save the new student info
-                                user.student_info['test'] = 'new string';
-                                user.student_info.save((err, user) => {
+                        var prom = new Promise((resolve1, reject1) => {
+                            //console.log(user);
+                            if (!user.student_info) {
+                                const student = new Student({
+                                    courses: []
+                                });
+                                student.save((err, student) => {
                                     if (err) console.log(err);
                                 });
-                            });
-
-                        user.save((err, user) => {
-                            if (err) console.log(err);
+                                // save ref to the student
+                                user.student_info = student._id;
+                                
+                                user.save((err, user) => {
+                                    if (err) reject1(err);
+                                    else resolve1(true);
+                                });
+                            }
+                            else resolve1(true);
                         });
-                        
-                        resolve(true);
+                        prom.then(() => {
+                            User.findOne({ curr_token: token}).populate('student_info').exec((err, user) => {
+                                if ('courses' in data) {
+                                    Course.find({ title: { $in: data['courses']}}, '_id', (err, courses) => {
+                                        if (err) reject(err);
+                                        else {
+                                            var ids = []
+                                            for (i in courses) {
+                                                ids.push(courses[i]['_id']);
+                                            }
+                                            user.student_info.update(
+                                                { courses: [] }, { upsert: true},
+                                                function(err) {
+                                                    if (err) reject(err);
+                                                    else user.student_info.update(
+                                                            { $addToSet: { courses: { $each: ids} } },
+                                                            function(err) {
+                                                                if (err) reject(err);
+                                                                else resolve(true);
+                                                            }
+                                                        );
+                                                }
+                                            );
+                                            
+                                        }
+                                    });
+                                }
+                            });
+                        }).catch(err => {
+                            if (err) reject(err);
+                        })
+                        /*
+                        //user
+                        User.findOne({ curr_token: token}).populate('student_info').exec((err, user) => {
+                            if ('courses' in data) {
+                                Course.find({ title: { $in: data['courses']}}, '_id', (err, courses) => {
+                                    if (err) reject(err);
+                                    else {
+                                        var ids = []
+                                        for (i in courses) {
+                                            ids.push(courses[i]['_id']);
+                                        }
+                                        user.student_info.update(
+                                            { courses: [] }, { upsert: true},
+                                            function(err) {
+                                                if (err) reject(err);
+                                                else user.student_info.update(
+                                                        { $addToSet: { courses: { $each: ids} } },
+                                                        function(err) {
+                                                            if (err) reject(err);
+                                                            else resolve(true);
+                                                        }
+                                                    );
+                                            }
+                                        );
+                                        
+                                    }
+                                });
+                            }
+                        });
+                        */
+
                     }
                 }
             });
