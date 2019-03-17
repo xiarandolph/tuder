@@ -188,9 +188,15 @@ module.exports = {
     },
     get_all_courses: () => {
         return new Promise((resolve, reject) => {
-            Course.find({}, (err, docs) => {
+            Course.find({}, (err, courses) => {
                 if (err) reject(err);
-                else resolve(docs);
+                else {
+                    var titles = []
+                    for (i in courses) {
+                        titles.push(courses[i]['title']);
+                    }
+                    resolve(titles);
+                }
             }).exec();  // unknown necessary exec()? server freezes without
         });
     },
@@ -205,7 +211,7 @@ module.exports = {
                         reject("Invalid token");
                     } else {
                         // create student_info model
-                        var prom = new Promise((resolve1, reject1) => {
+                        var student_exists = new Promise((resolve1, reject1) => {
                             //console.log(user);
                             if (!user.student_info) {
                                 const student = new Student({
@@ -224,7 +230,7 @@ module.exports = {
                             }
                             else resolve1(true);
                         });
-                        prom.then(() => {
+                        student_exists.then(() => {
                             User.findOne({ curr_token: token}).populate('student_info').exec((err, user) => {
                                 if ('courses' in data) {
                                     Course.find({ title: { $in: data['courses']}}, '_id', (err, courses) => {
