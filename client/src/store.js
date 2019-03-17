@@ -29,7 +29,7 @@ export default new Vuex.Store({
             })
                 .then(r => r.data)
                 .then(courses => {
-                    console.log(courses);
+                    return courses;
                 })
         }
     },

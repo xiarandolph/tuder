@@ -25,14 +25,19 @@
                                     </div>
                                     <div v-if="page == 2">
                                         <h1 class="display-1">What courses are you taking?</h1>
-                                        <v-text-field
+                                        <!--<v-text-field
                                           name="courses"
                                           label="Courses"
                                           id="courses"
-                                        ></v-text-field>
-                                        
-                                        
-                                        
+                                          model="course_text"
+                                        ></v-text-field>-->
+
+                                        <v-overflow-btn
+                                          :items="courses"
+                                          label="Editable Btn"
+                                          editable
+                                          item-value="title"
+                                        ></v-overflow-btn>
                                     </div>
                                     <div v-if="page == 3">
                                         <h1 class="display-1">What time(s) are you free?</h1>
@@ -77,16 +82,15 @@ export default {
     
     methods: {
         stuff: function() {
-            console.log(store.state.courses);
+            console.log(this.courses);
         }
     },
 
     data: function() {
         return {
-            courses: store.state.courses,
+            courses: this.$store.dispatch('get_courses'),
             current_tab: 0,
             page: 1,
-            courses: store.getters.courses,
             topics: ["Math", "Engineering", "Computer Science", "Science", "Humanities", "Business", "Architecture"],
             added_courses: [],
             course_text: "",
