@@ -8,12 +8,21 @@ mongoose.connect('mongodb://localhost/test');
 const db = mongoose.connection;
 
 /* models */
+var Student;
 var User;
 var Course;
 
 db.on('error', console.error.bind(console, "connection error: "));
 db.once('open', () => {
     console.log("Connected to DB!");
+
+    const studentSchema = new mongoose.Schema({
+        courses: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Course",
+            required: true
+        }]
+    });
 
     const userSchema = new mongoose.Schema({
         first: {
@@ -44,6 +53,11 @@ db.once('open', () => {
             type: String,
             unique: true,
             required: false
+        },
+        
+        student_info: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Student"
         }
     });
 
@@ -56,6 +70,7 @@ db.once('open', () => {
         }
     });
 
+    Student = mongoose.model('Student', studentSchema);
     User = mongoose.model('User', userSchema);
     Course = mongoose.model('Course', courseSchema);
     
@@ -150,45 +165,127 @@ module.exports = {
     // returns user information from a token
     get_user_info: (token) => {
         return new Promise((resolve, reject) => {
-            User.where({ curr_token: token}).findOne((err, user) => {
-                if (err) reject(err);
-                else {
-                    if (user == null) {
-                        // no user with current token (suggest relog)
-                        resolve(false);
-                    } else {
-                        data = {
-                            first: user.first,
-                            last: user.last,
-                            email: user.email
+            User.findOne({ curr_token: token})
+                .populate({path: 'student_info', populate: { path: 'courses'} })
+                .exec((err, user) => {
+                    if (err) reject(err);
+                    else {
+                        if (user == null) {
+                            // no user with current token (suggest relog)
+                            reject("Invalid token");
+                        } else {
+                            data = {
+                                first: user.first,
+                                last: user.last,
+                                email: user.email,
+                                student_info: user.student_info
+                            }
+                            resolve(data);
                         }
-                        resolve(data);
                     }
-                }
-            });
+                });
         });
     },
     get_all_courses: () => {
         return new Promise((resolve, reject) => {
             Course.find({}, (err, docs) => {
                 if (err) reject(err);
-                resolve(docs);
+                else resolve(docs);
             }).exec();  // unknown necessary exec()? server freezes without
         });
     },
     // updates user information with given token to have data
     update_student_info: (token, data) => {
         return new Promise((resolve, reject) => {
-            User.where({ curr_token: token}).findOne((err, user) => {
+            User.findOne({ curr_token: token}).populate('student_info').exec((err, user) => {
                 if (err) reject(err);
                 else {
                     if (user == null) {
                         // no user with current token (suggest relog)
-                        resolve(false);
+                        reject("Invalid token");
                     } else {
-                        console.log(user);
-                        console.log(data);
-                        resolve(true);
+                        // create student_info model
+                        var prom = new Promise((resolve1, reject1) => {
+                            //console.log(user);
+                            if (!user.student_info) {
+                                const student = new Student({
+                                    courses: []
+                                });
+                                student.save((err, student) => {
+                                    if (err) console.log(err);
+                                });
+                                // save ref to the student
+                                user.student_info = student._id;
+                                
+                                user.save((err, user) => {
+                                    if (err) reject1(err);
+                                    else resolve1(true);
+                                });
+                            }
+                            else resolve1(true);
+                        });
+                        prom.then(() => {
+                            User.findOne({ curr_token: token}).populate('student_info').exec((err, user) => {
+                                if ('courses' in data) {
+                                    Course.find({ title: { $in: data['courses']}}, '_id', (err, courses) => {
+                                        if (err) reject(err);
+                                        else {
+                                            var ids = []
+                                            for (i in courses) {
+                                                ids.push(courses[i]['_id']);
+                                            }
+                                            user.student_info.update(
+                                                { courses: [] }, { upsert: true},
+                                                function(err) {
+                                                    if (err) reject(err);
+                                                    else user.student_info.update(
+                                                            { $addToSet: { courses: { $each: ids} } },
+                                                            function(err) {
+                                                                if (err) reject(err);
+                                                                else resolve(true);
+                                                            }
+                                                        );
+                                                }
+                                            );
+                                            
+                                        }
+                                    });
+                                }
+                            });
+                        }).catch(err => {
+                            if (err) reject(err);
+                        })
+                        /*
+                        //user
+                        User.findOne({ curr_token: token}).populate('student_info').exec((err, user) => {
+                            if ('courses' in data) {
+                                Course.find({ title: { $in: data['courses']}}, '_id', (err, courses) => {
+                                    if (err) reject(err);
+                                    else {
+                                        var ids = []
+                                        for (i in courses) {
+                                            ids.push(courses[i]['_id']);
+                                        }
+                                        user.student_info.update(
+                                            { courses: [] }, { upsert: true},
+                                            function(err) {
+                                                if (err) reject(err);
+                                                else user.student_info.update(
+                                                        { $addToSet: { courses: { $each: ids} } },
+                                                        function(err) {
+                                                            if (err) reject(err);
+                                                            else resolve(true);
+                                                        }
+                                                    );
+                                            }
+                                        );
+                                        
+                                    }
+                                });
+                            }
+                        });
+                        */
+
                     }
                 }
             });
@@ -199,7 +296,7 @@ module.exports = {
         return new Promise((resolve, reject) => {
             User.find({}, (err, docs) => {
                 if (err) reject(err);
-                resolve(docs);
+                else resolve(docs);
             }).exec();  // unknown necessary exec()? server freezes without
         });
     }
