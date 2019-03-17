@@ -15,7 +15,7 @@ db.on('error', console.error.bind(console, "connection error: "));
 db.once('open', () => {
     console.log("Connected to DB!");
 
-    var userSchema = new mongoose.Schema({
+    const userSchema = new mongoose.Schema({
         first: {
             type: String,
             required: true,
@@ -47,9 +47,7 @@ db.once('open', () => {
         }
     });
 
-    User = mongoose.model('User', userSchema);
-
-    var courseSchema = new mongoose.Schema({
+    const courseSchema = new mongoose.Schema({
         title: {
             type: String,
             unique: true,
@@ -57,14 +55,15 @@ db.once('open', () => {
             trim: true
         }
     });
-    
+
+    User = mongoose.model('User', userSchema);
     Course = mongoose.model('Course', courseSchema);
     
     // store courses into the database
     const courses = require('../../python/out.json')['courses'];
     for (let i = 0; i < courses.length; i++) {
-        var course_title = courses[i];
-        var course = new Course({
+        const course_title = courses[i];
+        const course = new Course({
             title: course_title
         });
         course.save((err, course) => {
@@ -87,7 +86,7 @@ module.exports = {
                 else {
                     if (user == null) {
                         bcrypt.hash(new_pass, 10).then((hash) => {
-                            var user = new User({
+                            const user = new User({
                                 first: new_first,
                                 last: new_last,
                                 password: hash,
