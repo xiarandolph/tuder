@@ -9,12 +9,12 @@
                                 <v-tabs
                                   v-model="current_tab" color="primary" dark slider-color="primary" right=true
                                 >
-                              		<v-tab>
-                                		Register
-                              		</v-tab>
-                              		<v-tab>
-                                		Login
-                              		</v-tab>
+                                    <v-tab>
+                                        Register
+                                    </v-tab>
+                                    <v-tab>
+                                        Login
+                                    </v-tab>
                                 </v-tabs>
                             </v-toolbar>
                             <v-alert color="red" type="error" :value="error" v-if="current_tab==0">Failed to register.</v-alert>
@@ -30,9 +30,9 @@
                                     <v-text-field id="last" name="last" label="Last Name" v-model="last_name" required></v-text-field>
                                 </v-form>
                                 <v-form v-if="current_tab==1">
-                                    <v-text-field prepend-icon="person" name="email" label="Email" type="text" placeholder="student@rpi.edu"></v-text-field>
+                                    <v-text-field prepend-icon="person" name="email" label="Email" type="text" placeholder="student@rpi.edu" v-model="email"></v-text-field>
 
-                                    <v-text-field id="password" prepend-icon="lock" name="password" label="Password" type="password"></v-text-field>
+                                    <v-text-field id="password" prepend-icon="lock" name="password" label="Password" type="password" v-model="password"></v-text-field>
                                 </v-form>
                             </v-card-text>
                             <v-card-actions>
@@ -56,54 +56,80 @@ window.jQuery = $;
 import store from '@/store';
 
 export default {
-	data: () => ({
-		drawer: null,
-		current_tab: 0,
-		password: "",
-		email: "",
-		error: false,
-		registered: false,
-	}),
+    data: () => ({
+        drawer: null,
+        current_tab: 0,
+        password: "",
+        email: "",
+        error: false,
+        registered: false,
+    }),
 
-	props: {
-		source: String
-	},
+    props: {
+        source: String
+    },
 
-	methods: {
-		login: function(email, password) {
-			console.log("login");
-			$.ajax({
-				type: "POST",
-				url: store.state.url + "/login",
-				data: {"email": email, "pass": password},
-				success: (data) => {
-					if (data != false) {
-						localStorage.setItem('user', JSON.stringify(data));
-						store.commit('set_user', data);
-						router.push('/create_user');
-						this.error = !data;
-					}
-				}
-			});
-		},
+    methods: {
+        login: function(email, password) {
+            console.log("login");
 
-		register: function(email, password, last_name, first_name) {
-			console.log("register");
-			$.ajax({
-				type: "POST",
-				url: store.state.url + "/register",
-				data: {"email": email, "pass": password, "first": first_name, "last": last_name},
-				success: (data) => {
-					console.log(data);
+            $.ajax({
+                type: "POST",
+                url: store.state.url + "/login",
+                data: {"email": email, "pass": password},
+                success: (data) => {
+                    if (data != false) {
+                        localStorage.setItem('user', JSON.stringify(data));
+                        this.error = !data;
 
-					this.error = !data;
-					if (!this.error) {
-						this.registered = true;
-					}
+                        if (!this.error) {
+                            /*
+                            $.ajax({
+                                type: "GET",
+                                url: store.state.url + "/get_all_courses",
 
-				}
-			});
-		}
-	},
+                                beforeSend: function (xhr) {
+                                    var token = localStorage.getItem("user");
+                                    token = token.substring(1, token.length - 1);
+                                    console.log("token");
+                                    xhr.setRequestHeader ("Authorization", "Bearer " + token);
+                                    xhr.setRequestHeader("Access-Control-Allow-Origin", store.state.url)
+                                },
+
+                                success: function(data) {
+                                    var courses = [];
+                                    for (let i = 0; i < data.length; i++) {
+                                        var course = data[i]["title"];
+                                        courses.push(course);
+                                    }
+                                    store.commit('update_courses', courses);
+                                }
+                            });*/
+
+                            router.push('/create_user');
+                        }
+                    }
+                }
+            });
+        },
+
+        register: function(email, password, last_name, first_name) {
+            console.log("register");
+            $.ajax({
+                type: "POST",
+                url: store.state.url + "/register",
+                data: {"email": email, "pass": password, "first": first_name, "last": last_name},
+                success: (data) => {
+                    console.log(data);
+
+                    this.error = !data;
+                    if (!this.error) {
+                        this.registered = true;
+                    }
+
+                }
+            });
+        }
+    },
 }
 </script>
