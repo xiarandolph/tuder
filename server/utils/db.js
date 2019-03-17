@@ -12,11 +12,16 @@ var Student;
 var User;
 var Course;
 
+const TOPICS = ["Math", "Engineering", "Computer Science", "Science", "Humanities", "Business", "Architecture"]
+
 db.on('error', console.error.bind(console, "connection error: "));
 db.once('open', () => {
     console.log("Connected to DB!");
 
     const studentSchema = new mongoose.Schema({
+        topics: [{
+            type: String
+        }],
         courses: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: "Course",
@@ -166,7 +171,7 @@ module.exports = {
     get_user_info: (token) => {
         return new Promise((resolve, reject) => {
             User.findOne({ curr_token: token})
-                .populate({path: 'student_info', populate: { path: 'courses'} })
+                .populate({path: 'student_info', populate: { path: 'courses', select: 'title'} })
                 .exec((err, user) => {
                     if (err) reject(err);
                     else {
@@ -211,87 +216,79 @@ module.exports = {
                         reject("Invalid token");
                     } else {
                         // create student_info model
-                        var student_exists = new Promise((resolve1, reject1) => {
+                        var student_exists = new Promise((resolve_student, reject_student) => {
                             //console.log(user);
                             if (!user.student_info) {
                                 const student = new Student({
+                                    topics: [],
                                     courses: []
                                 });
                                 student.save((err, student) => {
-                                    if (err) console.log(err);
+                                    if (err) {
+                                        reject_student(err);
+                                        return;
+                                    }
                                 });
                                 // save ref to the student
                                 user.student_info = student._id;
                                 
                                 user.save((err, user) => {
-                                    if (err) reject1(err);
-                                    else resolve1(true);
+                                    if (err) reject_student(err);
+                                    else resolve_student(true);
                                 });
                             }
-                            else resolve1(true);
+                            else resolve_student(true);
                         });
+                        // once student_info model has been created for the user
                         student_exists.then(() => {
-                            User.findOne({ curr_token: token}).populate('student_info').exec((err, user) => {
+                            // populate student_info
+                            var promise = User.findOne({ curr_token: token}).populate('student_info').exec();
+                            promise.then((user) => {
+                                // update courses
                                 if ('courses' in data) {
-                                    Course.find({ title: { $in: data['courses']}}, '_id', (err, courses) => {
-                                        if (err) reject(err);
-                                        else {
-                                            var ids = []
-                                            for (i in courses) {
-                                                ids.push(courses[i]['_id']);
-                                            }
-                                            user.student_info.update(
-                                                { courses: [] }, { upsert: true},
-                                                function(err) {
-                                                    if (err) reject(err);
-                                                    else user.student_info.update(
-                                                            { $addToSet: { courses: { $each: ids} } },
-                                                            function(err) {
-                                                                if (err) reject(err);
-                                                                else resolve(true);
-                                                            }
-                                                        );
-                                                }
-                                            );
-                                            
-                                        }
-                                    });
-                                }
-                            });
-                        }).catch(err => {
-                            if (err) reject(err);
-                        })
-                        /*
-                        //user
-                        User.findOne({ curr_token: token}).populate('student_info').exec((err, user) => {
-                            if ('courses' in data) {
-                                Course.find({ title: { $in: data['courses']}}, '_id', (err, courses) => {
-                                    if (err) reject(err);
-                                    else {
+                                    var find_courses = Course.find({ title: { $in: data['courses']}}, '_id').exec()
+                                    find_courses.then((courses) => {
+                                        // get just the ids
                                         var ids = []
                                         for (i in courses) {
                                             ids.push(courses[i]['_id']);
                                         }
-                                        user.student_info.update(
-                                            { courses: [] }, { upsert: true},
-                                            function(err) {
-                                                if (err) reject(err);
-                                                else user.student_info.update(
-                                                        { $addToSet: { courses: { $each: ids} } },
-                                                        function(err) {
-                                                            if (err) reject(err);
-                                                            else resolve(true);
-                                                        }
-                                                    );
-                                            }
-                                        );
-                                        
+                                        return new Promise((res) => { res(ids); });
+                                    }).then((ids) => {
+                                        // updates courses array to be ids
+                                        user.student_info.update( { courses: ids } );
+                                    }).catch((err) => {
+                                        reject(err);
+                                    });
+                                }
+                            }).then((res) => {
+                                return User.findOne({ curr_token: token}).populate('student_info').exec();
+                            }).then((user) => {
+                                // update topics
+                                if ('topics' in data) {
+                                    var topics = []
+                                    for (i in data['topics']) {
+                                        if (TOPICS.includes(data['topics'][i]))
+                                            topics.push(data['topics'][i]);
                                     }
-                                });
-                            }
-                        });
-                        */
-
+                                    // update topics list
+                                    user.student_info.update( { topics: [] } )
+                                    .then((res) => {
+                                        // add to set
+                                        user.student_info.update(
+                                            { $addToSet: { topics: { $each: topics} } }
+                                        )
+                                        .then((res) => {
+                                            resolve(true);
+                                        });
+                                    });
+                                }
+                            }).catch((err) => {
+                                reject(err);
+                            });
+                        }).catch(err => {
+                            reject(err);
+                        })
                     }
                 }
             });
