@@ -9,7 +9,7 @@
       </v-avatar>
     </v-btn>
   </v-toolbar>
-  <v-navigation-drawer right= "true" v-model="drawer" absolute temporary>
+  <v-navigation-drawer right="true" v-model="drawer" absolute temporary>
     <v-toolbar flat class="transparent">
       <v-list class="pa-0">
         <v-list-tile avatar>
@@ -40,6 +40,45 @@
         </v-list-tile-content>
       </v-list-tile>
     </v-list>
+    <v-expansion-panel>
+      <v-expansion-panel-content>
+        <template v-slot:header>
+          <div>Edit Profile</div>
+        </template>
+        <v-card>
+          <v-form>
+            <v-container>
+              <v-layout row wrap <v-flex xs12>
+                <v-text>Topics (Select Topics Below)</v-text>
+                <v-container fluid>
+
+                </v-container>
+                <v-text>Courses (Select Courses Below)</v-text>
+                <v-container fluid>
+
+                </v-container>
+                <v-text>Availability (Select Available Days)</v-text>
+                <v-container fluid>
+                  <v-checkbox v-model="checkbox1" :label="`Monday`"></v-checkbox>
+                  <v-checkbox v-model="checkbox2" :label="`Tuesday`"></v-checkbox>
+                  <v-checkbox v-model="checkbox3" :label="`Wednesday`"></v-checkbox>
+                  <v-checkbox v-model="checkbox4" :label="`Thursday`"></v-checkbox>
+                  <v-checkbox v-model="checkbox5" :label="`Friday`"></v-checkbox>
+                  <v-checkbox v-model="checkbox6" :label="`Saturday`"></v-checkbox>
+                  <v-checkbox v-model="checkbox7" :label="`Sunday`"></v-checkbox>
+                </v-container>
+                <v-text>Personality Preferences (Select Up To 5)</v-text>
+                <v-container fluid>
+                  <v-checkbox v-model="personality1" :label="`Example1`"></v-checkbox>
+                  <v-checkbox v-model="personality2" :label="`Example2`"></v-checkbox>
+                </v-container>
+                </v-flex>
+              </v-layout>
+            </v-container>
+          </v-form>
+        </v-card>
+      </v-expansion-panel-content>
+    </v-expansion-panel>
   </v-navigation-drawer>
 
 
@@ -93,14 +132,39 @@ export default {
   data: () => ({
     show: false,
     drawer: false,
-    items: [
-        { title: 'Tutor Mode', icon: 'fas fa-exchange-alt' },
-        { title: 'Edit Profile', icon: 'fas fa-edit'},
-        { title: 'Sign Out', icon: 'fas fa-sign-out-alt'},
+    items: [{
+        title: 'Tutor Mode',
+        icon: 'fas fa-exchange-alt'
+      },
+      {
+        title: 'Edit Profile',
+        icon: 'fas fa-edit'
+      },
+      {
+        title: 'Sign Out',
+        icon: 'fas fa-sign-out-alt'
+      },
     ],
     mini: true,
-    right: null
+    right: null,
+    checkbox1: false,
+    checkbox2: false,
+    checkbox3: false,
+    checkbox4: false,
+    checkbox5: false,
+    checkbox6: false,
+    checkbox7: false,
+    peronality1: false,
+    personality2: false
 
   })
 }
 </script>
+
+<!--
+<style scoped>
+.backgound {
+  background-color=#
+}
+</style>
+-->
