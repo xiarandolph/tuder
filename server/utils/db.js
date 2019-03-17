@@ -9,6 +9,7 @@ const db = mongoose.connection;
 
 /* models */
 var Student;
+var Tutor;
 var User;
 var Course;
 
@@ -19,6 +20,17 @@ db.once('open', () => {
     console.log("Connected to DB!");
 
     const studentSchema = new mongoose.Schema({
+        topics: [{
+            type: String
+        }],
+        courses: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Course",
+            required: true
+        }]
+    });
+    
+    const tutorSchema = new mongoose.Schema({
         topics: [{
             type: String
         }],
@@ -62,7 +74,14 @@ db.once('open', () => {
         
         student_info: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Student"
+            ref: "Student",
+            required: false
+        },
+        
+        tutor_info: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Tutor",
+            required: false
         }
     });
 
@@ -76,6 +95,7 @@ db.once('open', () => {
     });
 
     Student = mongoose.model('Student', studentSchema);
+    Tutor = mongoose.model('Tutor', tutorSchema);
     User = mongoose.model('User', userSchema);
     Course = mongoose.model('Course', courseSchema);
     
@@ -172,6 +192,7 @@ module.exports = {
         return new Promise((resolve, reject) => {
             User.findOne({ curr_token: token})
                 .populate({path: 'student_info', populate: { path: 'courses', select: 'title'} })
+                .populate({path: 'tutor_info', populate: { path: 'courses', select: 'title'} })
                 .exec((err, user) => {
                     if (err) reject(err);
                     else {
@@ -183,7 +204,8 @@ module.exports = {
                                 first: user.first,
                                 last: user.last,
                                 email: user.email,
-                                student_info: user.student_info
+                                student_info: user.student_info,
+                                tutor_info: user.tutor_info
                             }
                             resolve(data);
                         }
@@ -256,7 +278,7 @@ module.exports = {
                                         return new Promise((res) => { res(ids); });
                                     }).then((ids) => {
                                         // updates courses array to be ids
-                                        user.student_info.update( { courses: ids } );
+                                        user.student_info.update( { courses: ids } ).exec();
                                     }).catch((err) => {
                                         reject(err);
                                     });
@@ -272,12 +294,102 @@ module.exports = {
                                             topics.push(data['topics'][i]);
                                     }
                                     // update topics list
-                                    user.student_info.update( { topics: [] } )
+                                    user.student_info.update( { topics: [] } ).exec()
                                     .then((res) => {
-                                        // add to set
+                                        // add to topics set
                                         user.student_info.update(
                                             { $addToSet: { topics: { $each: topics} } }
-                                        )
+                                        ).exec()
+                                        .then((res) => {
+                                            resolve(true);
+                                        });
+                                    });
+                                }
+                            }).catch((err) => {
+                                reject(err);
+                            });
+                        }).catch(err => {
+                            reject(err);
+                        })
+                    }
+                }
+            });
+        });
+    },
+    // updates user information with given token to have data
+    update_tutor_info: (token, data) => {
+        return new Promise((resolve, reject) => {
+            User.findOne({ curr_token: token}).populate('tutor_info').exec((err, user) => {
+                if (err) reject(err);
+                else {
+                    if (user == null) {
+                        // no user with current token (suggest relog)
+                        reject("Invalid token");
+                    } else {
+                        // create tutor_info model
+                        var tutor_exists = new Promise((resolve_tutor, reject_tutor) => {
+                            //console.log(user);
+                            if (!user.tutor_info) {
+                                const tutor = new Tutor({
+                                    topics: [],
+                                    courses: []
+                                });
+                                tutor.save((err, tutor) => {
+                                    if (err) {
+                                        reject_tutor(err);
+                                        return;
+                                    }
+                                });
+                                // save ref to the student
+                                user.tutor_info = tutor._id;
+                                
+                                user.save((err, user) => {
+                                    if (err) reject_tutor(err);
+                                    else resolve_tutor(true);
+                                });
+                            }
+                            else resolve_tutor(true);
+                        });
+                        // once tutor_info model has been created for the user
+                        tutor_exists.then(() => {
+                            // populate tutor_info
+                            var promise = User.findOne({ curr_token: token}).populate('tutor_info').exec();
+                            promise.then((user) => {
+                                console.log(user);
+                                // update courses
+                                if ('courses' in data) {
+                                    var find_courses = Course.find({ title: { $in: data['courses']}}, '_id').exec()
+                                    find_courses.then((courses) => {
+                                        // get just the ids
+                                        var ids = []
+                                        for (i in courses) {
+                                            ids.push(courses[i]['_id']);
+                                        }
+                                        return new Promise((res) => { res(ids); });
+                                    }).then((ids) => {
+                                        // updates courses array to be ids
+                                        user.tutor_info.update( { courses: ids } ).exec();
+                                    }).catch((err) => {
+                                        reject(err);
+                                    });
+                                }
+                            }).then((res) => {
+                                return User.findOne({ curr_token: token}).populate('tutor_info').exec();
+                            }).then((user) => {
+                                // update topics
+                                if ('topics' in data) {
+                                    var topics = []
+                                    for (i in data['topics']) {
+                                        if (TOPICS.includes(data['topics'][i]))
+                                            topics.push(data['topics'][i]);
+                                    }
+                                    // update topics list
+                                    user.tutor_info.update( { topics: [] } ).exec()
+                                    .then((res) => {
+                                        // add to topics set
+                                        user.tutor_info.update(
+                                            { $addToSet: { topics: { $each: topics} } }
+                                        ).exec()
                                         .then((res) => {
                                             resolve(true);
                                         });

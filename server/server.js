@@ -78,6 +78,17 @@ app.post('/update_student_info', (req, res) => {
         });
 });
 
+app.post('/update_tutor_info', (req, res) => {
+    // authorization = ['Bearer', 'token']
+    var token = req.headers.authorization.split(" ")[1];
+    DB.update_tutor_info(token, req.body)
+        .then(data => res.json(data))
+        .catch(err => {
+            console.error(err)
+            res.send(false);
+        });
+});
+
 app.get('/get_all_users', (req, res) => {
     DB.get_all_users()
         .then(data => res.json(data))
