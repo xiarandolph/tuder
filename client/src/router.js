@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Student from './views/Student.vue'
 import Tutor from './views/Tutor.vue'
+import Home from './views/Home.vue'
 
 Vue.use(Router)
 
@@ -16,6 +17,11 @@ export default new Router({
       path: '/tutor',
       name: 'tutor',
       component: Tutor
+    },
+    {
+      path:'/',
+      name: 'Home',
+      component: Home
     },
     {
       path: '/auth',
