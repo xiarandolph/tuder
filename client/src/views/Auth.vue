@@ -32,7 +32,7 @@
                                 <v-form v-if="current_tab==1">
                                     <v-text-field prepend-icon="person" name="email" label="Email" type="text" placeholder="student@rpi.edu" v-model="email"></v-text-field>
 
-                                    <v-text-field id="password" prepend-icon="lock" name="password" label="Password" type="password" v-model="password"></v-text-field>
+                                    <v-text-field id="password" prepend-icon="lock" name="password" label="Password" type="password" v-model=""></v-text-field>
                                 </v-form>
                             </v-card-text>
                             <v-card-actions>

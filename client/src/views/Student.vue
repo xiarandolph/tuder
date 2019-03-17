@@ -80,6 +80,8 @@
 
 <script>
 export default {
+  name: "student",
+  
   data: () => ({
     show: false
   })
