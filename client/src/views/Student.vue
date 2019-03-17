@@ -93,10 +93,11 @@ export default {
   data: () => ({
     show: false,
     drawer: false,
-    items: [{
-      title: 'Tutoring',
-      icon: 'dashboard'
-    }, ],
+    items: [
+        { title: 'Tutor Mode', icon: 'fas fa-exchange-alt' },
+        { title: 'Edit Profile', icon: 'fas fa-edit'},
+        { title: 'Sign Out', icon: 'fas fa-sign-out-alt'},
+    ],
     mini: true,
     right: null
 
