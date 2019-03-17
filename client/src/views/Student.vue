@@ -4,20 +4,19 @@
     <v-toolbar-title class="white--text">Home</v-toolbar-title>
     <v-spacer></v-spacer>
     <v-btn icon @click.stop="drawer = !drawer">
-      <v-avatar size= "35" color="indigo">
-      <v-icon dark>account_circle</v-icon>
-    </v-avatar>
+      <v-avatar size="35" color="indigo">
+        <v-icon dark>account_circle</v-icon>
+      </v-avatar>
     </v-btn>
   </v-toolbar>
-  <v-navigation-drawer v-model="drawer" absolute
-        temporary>
+  <v-navigation-drawer right= "true" v-model="drawer" absolute temporary>
     <v-toolbar flat class="transparent">
       <v-list class="pa-0">
         <v-list-tile avatar>
           <v-list-tile-avatar>
-            <v-avatar size= "35" color="indigo">
-            <v-icon dark>account_circle</v-icon>
-          </v-avatar>
+            <v-avatar size="35" color="indigo">
+              <v-icon dark>account_circle</v-icon>
+            </v-avatar>
           </v-list-tile-avatar>
 
           <v-list-tile-content>
@@ -77,9 +76,13 @@
 
   <v-toolbar color="#eeeeee">
     <v-spacer></v-spacer>
-    <v-icon fab dark small color="red">block</v-icon>
+    <v-btn fab>
+      <v-icon fab color="red">block</v-icon>
+    </v-btn>
     <v-spacer></v-spacer>
-    <v-icon fab dark small color="pink">favorite</v-icon>
+    <v-btn fab>
+      <v-icon fab color="pink">favorite</v-icon>
+    </v-btn>
     <v-spacer></v-spacer>
   </v-toolbar>
 </v-app>
@@ -91,10 +94,9 @@ export default {
     show: false,
     drawer: false,
     items: [{
-        title: 'Tutoring',
-        icon: 'dashboard'
-      },
-    ],
+      title: 'Tutoring',
+      icon: 'dashboard'
+    }, ],
     mini: true,
     right: null
 
