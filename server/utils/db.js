@@ -114,27 +114,6 @@ module.exports = {
             });
         })
     },
-    // returns user information from a token
-    get_user: (token) => {
-        return new Promise((resolve, reject) => {
-            User.where({ curr_token: token}).findOne((err, user) => {
-                if (err) reject(err);
-                else {
-                    if (user == null) {
-                        // no user with current token (suggest relog)
-                        resolve(false);
-                    } else {
-                        data = {
-                            name: user.name,
-                            email: user.email,
-                            token: user.curr_token
-                        }
-                        resolve(data);
-                    }
-                }
-            });
-        });
-    },
     // logins in given a email and password, returns token
     login_user: (user_email, user_password) => {
         return new Promise((resolve, reject) => {
@@ -169,7 +148,28 @@ module.exports = {
             });
         });
     },
-    get_courses: () => {
+    // returns user information from a token
+    get_user_info: (token) => {
+        return new Promise((resolve, reject) => {
+            User.where({ curr_token: token}).findOne((err, user) => {
+                if (err) reject(err);
+                else {
+                    if (user == null) {
+                        // no user with current token (suggest relog)
+                        resolve(false);
+                    } else {
+                        data = {
+                            first: user.first,
+                            last: user.last,
+                            email: user.email
+                        }
+                        resolve(data);
+                    }
+                }
+            });
+        });
+    },
+    get_all_courses: () => {
         return new Promise((resolve, reject) => {
             Course.find({}, (err, docs) => {
                 if (err) reject(err);
@@ -178,7 +178,7 @@ module.exports = {
         });
     },
     // updates user information with given token to have data
-    update_student: (token, data) => {
+    update_student_info: (token, data) => {
         return new Promise((resolve, reject) => {
             User.where({ curr_token: token}).findOne((err, user) => {
                 if (err) reject(err);
@@ -195,9 +195,8 @@ module.exports = {
             });
         });
     },
-    // returns all registered users
-    // TODO: accept params to filter
-    get_students: () => {
+    // returns all registered users, temporary debugging
+    get_all_users: () => {
         return new Promise((resolve, reject) => {
             User.find({}, (err, docs) => {
                 if (err) reject(err);
