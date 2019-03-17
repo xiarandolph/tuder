@@ -17,6 +17,8 @@
                               		</v-tab>
                                 </v-tabs>
                             </v-toolbar>
+                            <v-alert color="red" type="error" :value="error" v-if="current_tab==0">Failed to register.</v-alert>
+                            <v-alert :value="!error" color="green" type="success" v-if="current_tab==0">Succcessfully registered!</v-alert>
                             <v-card-text>
                                 <v-form v-if="current_tab==0">
                                     <v-text-field prepend-icon="person" name="email" label="Email" type="text" placeholder="student@rpi.edu" v-model="email" required></v-text-field>
@@ -59,6 +61,8 @@ export default {
 		current_tab: 0,
 		password: "",
 		email: "",
+		error: false,
+		registered: false,
 	}),
 
 	props: {
@@ -73,7 +77,12 @@ export default {
 				url: store.state.url + "/login",
 				data: {"email": email, "pass": password},
 				success: (data) => {
-					console.log(data);
+					if (data != false) {
+						localStorage.setItem('user', JSON.stringify(data));
+						store.commit('set_user', data);
+						router.push('/create_user');
+						this.error = !data;
+					}
 				}
 			});
 		},
@@ -86,6 +95,12 @@ export default {
 				data: {"email": email, "pass": password, "first": first_name, "last": last_name},
 				success: (data) => {
 					console.log(data);
+
+					this.error = !data;
+					if (!this.error) {
+						this.registered = true;
+					}
+
 				}
 			});
 		}

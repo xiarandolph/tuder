@@ -1,15 +1,20 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Home from './views/Home.vue'
+import Student from './views/Student.vue'
 
 Vue.use(Router)
 
 export default new Router({
   routes: [
     {
-      path: '/',
-      name: 'home',
-      component: Home
+      path: '/student',
+      name: 'student',
+      component: Student
+    },
+    {
+      path: '/tutor',
+      name: 'student',
+      component: Tutor
     },
     {
       path: '/auth',
@@ -17,7 +22,12 @@ export default new Router({
       // route level code-splitting
       // this generates a separate chunk (about.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import(/* webpackChunkName: "about" */ './views/Auth.vue')
+      component: () => import(/* webpackChunkName: "Auth" */ './views/Auth.vue'),
+    },
+    {
+      path:'/create_user',
+      name: 'create_user',
+      component: () => import(/* webpackChunkName: "about" */ './views/CreateUser.vue'),
     }
   ]
 })
