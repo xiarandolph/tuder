@@ -89,6 +89,18 @@ app.post('/update_tutor_info', (req, res) => {
         });
 });
 
+app.get('/get_potential_tutors', (req, res) => {
+    // authorization = ['Bearer', 'token']
+    var token = req.headers.authorization.split(" ")[1];
+    DB.get_potential_tutors(token)
+        .then(data => res.json(data))
+        .catch(err => {
+            console.error(err);
+            res.send(false);
+        });
+});
+
+// for debug: DELETE
 app.get('/get_all_users', (req, res) => {
     DB.get_all_users()
         .then(data => res.json(data))

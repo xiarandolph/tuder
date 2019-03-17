@@ -27,6 +27,11 @@ db.once('open', () => {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Course",
             required: true
+        }],
+        potential_tutors: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Tutor",
+            required: false
         }]
     });
     
@@ -225,6 +230,34 @@ module.exports = {
                     resolve(titles);
                 }
             }).exec();  // unknown necessary exec()? server freezes without
+        });
+    },
+    get_potential_tutors: (token) => {
+        return new Promise((resolve, reject) => {
+            User.findOne({ curr_token: token})
+                .populate({path: 'student_info', select: 'potential_tutors'})
+                .exec()
+                    .then((user) => {
+                        // matches already calculated
+                        if (user.student_info.potential_tutors.length > 1)
+                            resolve(user.student_info.potential_tutors)
+                        else {
+                            //console.log(user);
+                            //https://jkchu.com/2016/02/17/designing-and-implementing-a-ranking-algorithm/
+                            // dont know how to weight
+                            
+                            return user.save();
+                        }
+                    })
+                    .then((user) => {
+                        if (user) {
+                            console.log(user);
+                            resolve(user.student_info.potential_tutors);
+                        }
+                    })
+                    .catch((err) => {
+                        reject(err);
+                    });
         });
     },
     // updates user information with given token to have data
