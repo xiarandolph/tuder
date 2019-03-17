@@ -12,7 +12,7 @@ const jwt = require('./utils/jwt');
 const error_handler = require('./utils/error-handler');
 
 app.use(express.static('public'));
-app.use(bodyParser.json());
+app.use(bodyParser.urlencoded());
 
 app.use(jwt());
 app.use(error_handler);
