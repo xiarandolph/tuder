@@ -12,20 +12,19 @@ const jwt = require('./utils/jwt');
 const error_handler = require('./utils/error-handler');
 
 app.use(express.static('public'));
-app.use(bodyParser.json());
+app.use(bodyParser.urlencoded());
 
 app.use(jwt());
 app.use(error_handler);
 
-/*
 // Add headers
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8080');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,Authorization,Access-Control-Allow-Origin');
     res.setHeader('Access-Control-Allow-Credentials', true);
     next();
-});*/
+});
 
 // POST request to register a new user
 app.post('/register', (req, res) => {
@@ -48,10 +47,10 @@ app.post('/login', (req, res) => {
         });
 });
 
-app.get('/get_user', (req, res) => {
+app.get('/get_user_info', (req, res) => {
     // authorization = ['Bearer', 'token']
     var token = req.headers.authorization.split(" ")[1];
-    DB.get_user(token)
+    DB.get_user_info(token)
         .then(data => res.json(data))
         .catch(err => {
             console.error(err);
@@ -59,10 +58,19 @@ app.get('/get_user', (req, res) => {
         });
 });
 
-app.post('/update_student', (req, res) => {
+app.get('/get_all_courses', (req, res) => {
+    DB.get_all_courses()
+        .then(data => res.json(data))
+        .catch(err => {
+            console.error(err);
+            res.send(false);
+        });
+});
+
+app.post('/update_student_info', (req, res) => {
     // authorization = ['Bearer', 'token']
     var token = req.headers.authorization.split(" ")[1];
-    DB.update_student(token, req.body)
+    DB.update_student_info(token, req.body)
         .then(data => res.json(data))
         .catch(err => {
             console.error(err)
@@ -70,8 +78,31 @@ app.post('/update_student', (req, res) => {
         });
 });
 
-app.get('/get_students', (req, res) => {
-    DB.get_students()
+app.post('/update_tutor_info', (req, res) => {
+    // authorization = ['Bearer', 'token']
+    var token = req.headers.authorization.split(" ")[1];
+    DB.update_tutor_info(token, req.body)
+        .then(data => res.json(data))
+        .catch(err => {
+            console.error(err)
+            res.send(false);
+        });
+});
+
+app.get('/get_potential_tutors', (req, res) => {
+    // authorization = ['Bearer', 'token']
+    var token = req.headers.authorization.split(" ")[1];
+    DB.get_potential_tutors(token)
+        .then(data => res.json(data))
+        .catch(err => {
+            console.error(err);
+            res.send(false);
+        });
+});
+
+// for debug: DELETE
+app.get('/get_all_users', (req, res) => {
+    DB.get_all_users()
         .then(data => res.json(data))
         .catch(err => {
             console.error(err)
