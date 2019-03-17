@@ -44,21 +44,6 @@ db.once('open', () => {
             type: String,
             unique: true,
             required: false
-        },
-/*
-        school: {
-            type: String,
-            required: false
-        },
-*/
-        learn_courses: {
-            type: Array,
-            required: false
-        },
-
-        teach_courses: {
-            type: Array,
-            required: false
         }
     });
 
@@ -123,7 +108,7 @@ module.exports = {
                     }
                     else {
                         console.log(`${new_email} already registered!`);
-                        resolve(false);
+                        resolve(false)
                     }
                 }
             });
@@ -142,9 +127,7 @@ module.exports = {
                         data = {
                             name: user.name,
                             email: user.email,
-                            token: user.curr_token,
-                            learn_courses: user.learn_courses,
-                            teach_courses: user.teach_courses
+                            token: user.curr_token
                         }
                         resolve(data);
                     }
@@ -180,7 +163,7 @@ module.exports = {
                         });
                     } else {
                         // user does not exist
-                        resolve(false)
+                        resolve(false);
                     }
                 }
             });
